@@ -1,120 +1,109 @@
 "use client";
 
-import Image from "next/image";
-import React, { useState } from "react";
+import React from "react";
+import { motion } from "framer-motion";
+import Swal from "sweetalert2";
 
-export default function AddServicePage() {
-  const [image, setImage] = useState(null);
-  const [preview, setPreview] = useState(null);
+export default function AddServiceForm() {
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    processFile(file);
+  const serviceData = {
+    companyName: e.target.companyName.value,
+    title: e.target.title.value,
+    description: e.target.description.value,
+    category: e.target.category.value,
+    price: e.target.price.value,
+    website: e.target.website.value,
+    email: e.target.email.value,
+    image: e.target.image.value,
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    processFile(file);
-  };
-
-  const processFile = (file) => {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      alert("Only image files are allowed");
-      return;
-    }
-    setImage(file);
-    setPreview(URL.createObjectURL(file));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("name", e.target.name.value);
-    formData.append("description", e.target.description.value);
-    formData.append("price", e.target.price.value);
-    formData.append("category", e.target.category.value);
-    if (image) formData.append("image", image);
-
-    const res = await fetch("/api/services", {
+  try {
+    const response = await fetch("/api/services", {
       method: "POST",
-      body: formData,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(serviceData),
     });
 
-    if (res.ok) {
-      alert("Service added successfully!");
-      e.target.reset();
-      setPreview(null);
+    const result = await response.json();
+
+    if (result.success) {
+      Swal.fire({
+  position: "top-end",
+  icon: "success",
+  title: "Your work has been saved",
+  showConfirmButton: false,
+  timer: 1500
+});
+      e.target.reset(); // Clear form
     } else {
-      alert("Error adding service.");
+      alert("Error submitting service: " + result.error);
     }
-  };
+  } catch (error) {
+    console.error(error);
+    alert("Error submitting service");
+  }
+};
+
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-lg">
-        <h2 className="text-2xl font-bold mb-6">Add Service</h2>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            name="name"
-            placeholder="Service Name"
-            className="w-full p-3 border rounded"
-            required
-          />
-
-          <textarea
-            name="description"
-            placeholder="Service Description"
-            className="w-full p-3 border rounded"
-            required
-          />
-
-          <input
-            type="number"
-            name="price"
-            placeholder="Price"
-            className="w-full p-3 border rounded"
-            required
-          />
-
-          <input
-            type="text"
-            name="category"
-            placeholder="Category"
-            className="w-full p-3 border rounded"
-            required
-          />
-
-          {/* Drag & Drop Image Upload */}
-          <div
-            className="w-full p-4 border-2 border-dashed rounded-lg flex flex-col items-center cursor-pointer"
-            onDrop={handleDrop}
-            onDragOver={(e) => e.preventDefault()}
-            onClick={() => document.getElementById("fileInput").click()}
+    <div className="min-h-screen flex justify-center items-center bg-gray-50">
+      {/* Form */}
+      <motion.form
+        onSubmit={handleSubmit}
+        className="bg-white shadow-lg rounded-lg p-8 max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-8"
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        {[
+          { label: "Company Name", name: "companyName", placeholder: "SEO Masters" },
+          { label: "Title", name: "title", placeholder: "SEO Optimization" },
+          { label: "Description", name: "description", placeholder: "Improve your website's ranking on Google", type: "textarea" },
+          { label: "Category", name: "category", placeholder: "Marketing" },
+          { label: "Price", name: "price", placeholder: "150", type: "number" },
+          { label: "Website", name: "website", placeholder: "https://seomasters.com", type: "url" },
+          { label: "Email", name: "email", placeholder: "contact@seomasters.com", type: "email" },
+          { label: "Image URL", name: "image", placeholder: "https://i.postimg.cc/HkHcD1GB/pexels-pixabay-265087.jpg", type: "url" },
+        ].map((field, index) => (
+          <motion.div
+            key={index}
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-1"
           >
-            {preview ? (
-              <Image src={preview} alt="Preview" className="w-24 h-24 rounded-full" />
+            <label className="block mb-1 font-medium">{field.label}</label>
+            {field.type === "textarea" ? (
+              <textarea
+                name={field.name}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400"
+                placeholder={field.placeholder}
+                required
+              />
             ) : (
-              <span>Drag & Drop or Click to Upload Image</span>
+              <input
+                type={field.type || "text"}
+                name={field.name}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400"
+                placeholder={field.placeholder}
+                required
+              />
             )}
-            <input
-              type="file"
-              id="fileInput"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-          </div>
+          </motion.div>
+        ))}
 
-          <button className="w-full py-3 bg-blue-500 text-white rounded hover:bg-blue-600">
+        {/* Submit Button */}
+        <motion.div className="col-span-full">
+          <button
+            type="submit"
+            whileHover={{ scale: 1.03 }}
+            className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition font-semibold"
+          >
             Add Service
           </button>
-        </form>
-      </div>
+        </motion.div>
+      </motion.form>
     </div>
   );
 }
