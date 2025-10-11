@@ -1,4 +1,5 @@
 // import AboutUsSection from '@/components/AboutUsSection/AboutUsSection';
+import { Banner } from '@/components/Banner/Banner';
 import FAQSection from '@/components/FAQ/FAQ';
 import HeroSection from '@/components/HeroSection/HeroSection';
 import HowItWorks from '@/components/HowItWorks/HowItWorks';
@@ -14,22 +15,25 @@ export default function page() {
       <div>
         <HeroSection></HeroSection>
       </div>
-      <div>
+      <div className='mt-20'>
+        <Banner></Banner>
+      </div>
+      <div className='mt-20'>
       <LandingServices></LandingServices>
       </div>
-      <div>
+      <div className='mt-20'>
         <HowItWorks></HowItWorks>
       </div>
-      <div>
+      <div className='mt-20'>
         <MeetOurPartners></MeetOurPartners>
       </div>
-      <div>
+      <div className='mt-20'>
         <StatsSection></StatsSection>
       </div>
       <div className="mt-20">
         <Testimonial />
       </div>
-      <div>
+      <div className='mt-20'>
         <FAQSection></FAQSection>
       </div>
     </div>

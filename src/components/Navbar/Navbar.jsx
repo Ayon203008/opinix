@@ -2,19 +2,23 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession(); // <-- get logged in user info
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/all-services", label: "Services" },
+    { href: "/aboutus", label: "About Us" },
     { href: "/add-services", label: "Add Service" },
+    { href: "/my-services", label: "My Services" },
+    { href: "/my-reviews", label: "My Reviews" },
     { href: "/dashboard", label: "Dashboard" },
-   
   ];
 
   return (
@@ -23,7 +27,6 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-md group-hover:scale-110 transition-transform">
-            {/* Speech bubble with star */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -54,19 +57,39 @@ export default function Navbar() {
             </Link>
           ))}
 
-          {/* Auth Buttons */}
-          <Link
-            href="/login"
-            className="px-4 py-2 rounded-lg border border-cyan-600 text-cyan-600 hover:bg-cyan-600 hover:text-white shadow-sm transition"
-          >
-            Login
-          </Link>
-          <Link
-            href="/register"
-            className="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-indigo-600 text-white shadow-md hover:opacity-90 transition"
-          >
-            Register
-          </Link>
+          {/* Auth Buttons or User Info */}
+          {session ? (
+            <div className="flex items-center gap-4">
+              {/* User Image */}
+              <img
+                src={session.user.image || "/default-avatar.png"}
+                alt={session.user.name}
+                className="w-10 h-10 rounded-full border-2 border-cyan-500"
+              />
+              {/* Logout Button */}
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="px-4 py-2 rounded-lg border border-cyan-600 text-cyan-600 hover:bg-cyan-600 hover:text-white shadow-sm transition"
+              >
+                Login
+              </Link>
+              <Link
+                href="/register"
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-indigo-600 text-white shadow-md hover:opacity-90 transition"
+              >
+                Register
+              </Link>
+            </>
+          )}
         </nav>
 
         {/* Mobile Menu Button */}
@@ -96,20 +119,38 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/login"
-              onClick={toggleMenu}
-              className="px-4 py-2 rounded-lg border border-cyan-600 text-cyan-600 hover:bg-cyan-600 hover:text-white transition"
-            >
-              Login
-            </Link>
-            <Link
-              href="/register"
-              onClick={toggleMenu}
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-indigo-600 text-white shadow-md hover:opacity-90 transition"
-            >
-              Register
-            </Link>
+            {session ? (
+              <div className="flex items-center gap-4">
+                <img
+                  src={session.user.image || "/default-avatar.png"}
+                  alt={session.user.name}
+                  className="w-10 h-10 rounded-full border-2 border-cyan-500"
+                />
+                <button
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  onClick={toggleMenu}
+                  className="px-4 py-2 rounded-lg border border-cyan-600 text-cyan-600 hover:bg-cyan-600 hover:text-white transition"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={toggleMenu}
+                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-indigo-600 text-white shadow-md hover:opacity-90 transition"
+                >
+                  Register
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
